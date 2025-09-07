@@ -28,6 +28,8 @@ export default function AlphaQuiz() {
   const [selected, setSelected] = useState<string | null>(null);
   const [score, setScore] = useState({ correct: 0, total: 0 });
 
+  const [showKind, setShowKind] = useState(false);
+
   useEffect(() => {
     setIndex(Math.floor(Math.random() * CYRILLIC.length));
   }, []);
@@ -61,6 +63,12 @@ export default function AlphaQuiz() {
 
   return (
     <section className="rounded-2xl border-white/10 bg-white/5 p-6">
+      <button
+        onClick={() => setShowKind((v) => !v)}
+        className="mb-4 rounded border border-white/20 px-3 py-1 text-sm hover:sm hover:bg-white/10"
+      >
+        {showKind ? "種別を隠す" : "種別を表示"}
+      </button>
       <div className="mb-3 flex items-center gap-3">
         <span className="opacity-80">進捗</span>
         <strong>
@@ -77,15 +85,17 @@ export default function AlphaQuiz() {
             {letter.upper}{" "}
             <span className="text-[48px] opacity-70">{letter.lower}</span>
           </div>
-          <div className="mb-4 text-sm opacity-70">
-            種別：
-            {letter.kind === "vowel"
-              ? "母音"
-              : letter.kind === "consonant"
-              ? "子音"
-              : "記号"}
-            {letter.ipa ? ` / IPA: ${letter.ipa}` : ""}
-          </div>
+          {showKind && (
+            <div className="mb-4 text-sm opacity-70">
+              種別：
+              {letter.kind === "vowel"
+                ? "母音"
+                : letter.kind === "consonant"
+                ? "子音"
+                : "記号"}
+              {letter.ipa ? ` / IPA: ${letter.ipa}` : ""}
+            </div>
+          )}
         </div>
 
         <button
