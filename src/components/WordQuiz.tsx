@@ -1,8 +1,14 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
-import { WORDS, Word } from "@/lib/words";
+import { WORDS_L1, WORDS_L2 } from "@/lib/words";
 
 type Mode = "reading" | "meaning"; // 読みクイズ・意味クイズ
+type Level = 1 | 2;
+
+const POOLS: Record<Level, typeof WORDS_L1> = {
+  1: WORDS_L1,
+  2: WORDS_L2,
+};
 
 function pickRandom<T>(arr: T[], n: number): T[] {
   const copy = [...arr];
@@ -13,7 +19,11 @@ function pickRandom<T>(arr: T[], n: number): T[] {
   return copy.slice(0, n);
 }
 
-function buildQuestion(word: Word, mode: Mode, pool: Word[]) {
+function buildQuestion(
+  word: (typeof WORDS_L1)[number],
+  mode: Mode,
+  pool: typeof WORDS_L1
+) {
   const correct = mode === "reading" ? word.readingJa : word.meaningJa;
   const distractorsPool = pool
     .map((w) => (mode === "reading" ? w.readingJa : w.meaningJa))
@@ -25,26 +35,33 @@ function buildQuestion(word: Word, mode: Mode, pool: Word[]) {
 
 export default function WordQuiz() {
   const [mode, setMode] = useState<Mode>("meaning"); // 初期は意味クイズにする
+  const [level, setLevel] = useState<Level>(1);
+  const pool = POOLS[level];
+
   const [index, setIndex] = useState<number | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
   const [score, setScore] = useState({ correct: 0, total: 0 });
 
   useEffect(() => {
-    setIndex(Math.floor(Math.random() * WORDS.length));
-  }, []);
+    setIndex(Math.floor(Math.random() * pool.length));
+    setSelected(null);
+  }, [level, pool.length]);
 
-  const word = useMemo(() => WORDS[index ?? 0], [index]);
+  const word = useMemo(
+    () => (index === null ? pool[0] : pool[index]),
+    [index, pool]
+  );
 
   const q = useMemo(() => {
     if (index === null)
       return { prompt: "", correct: "", options: [] as string[] };
-    return buildQuestion(word, mode, WORDS);
-  }, [index, word, mode]);
+    return buildQuestion(word, mode, pool);
+  }, [index, word, mode, pool]);
 
   const answered = selected !== null;
 
   const next = () => {
-    setIndex((i) => ((i ?? 0) + 1) % WORDS.length);
+    setIndex((i) => ((i ?? 0) + 1) % pool.length);
     setSelected(null);
   };
 
@@ -59,31 +76,63 @@ export default function WordQuiz() {
   return (
     <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
       {/* モード切り替え */}
-      <div className="mb-3 flex items-center gap-2">
-        <span className="text-sm opacity-80">モード:</span>
-        <button
-          onClick={() => setMode("meaning")}
-          className={[
-            "rounded px-3 py-1 text-sm border",
-            mode === "meaning"
-              ? "bg-white text-slate-900 border-transparent"
-              : "border-white/20 hover:bg-white/10",
-          ].join(" ")}
-        >
-          意味
-        </button>
-        <button
-          onClick={() => setMode("reading")}
-          className={[
-            "rounded px-3 py-1 text-sm border",
-            mode === "reading"
-              ? "bg-white text-slate-900 border-transparent"
-              : "border-white/20 hover:bg-white/10",
-          ].join(" ")}
-        >
-          読み
-        </button>
-        <div className="ml-auto text-sm opacity-80">
+      <div className="mb-3 flex flex-col gap-3 md:flex-row md:items-center">
+        <div className="flex items-center gap-2">
+          <span className="text-sm opacity-80">モード:</span>
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => setMode("meaning")}
+              className={[
+                "rounded px-3 py-1 text-sm border",
+                mode === "meaning"
+                  ? "bg-white text-slate-900 border-transparent"
+                  : "border-white/20 hover:bg-white/10",
+              ].join(" ")}
+            >
+              意味
+            </button>
+            <button
+              onClick={() => setMode("reading")}
+              className={[
+                "rounded px-3 py-1 text-sm border",
+                mode === "reading"
+                  ? "bg-white text-slate-900 border-transparent"
+                  : "border-white/20 hover:bg-white/10",
+              ].join(" ")}
+            >
+              読み
+            </button>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-sm opacity-80">レベル:</span>
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => setLevel(1)}
+              className={[
+                "rounded px-3 py-1 text-sm border",
+                level === 1
+                  ? "bg-white text-slate-900 border-transparent"
+                  : "border-white/20 hover:bg-white/10",
+              ].join(" ")}
+            >
+              Level1
+            </button>
+            <button
+              onClick={() => setLevel(2)}
+              className={[
+                "rounded px-3 py-1 text-sm border",
+                level === 2
+                  ? "bg-white text-slate-900 border-transparent"
+                  : "border-white/20 hover:bg-white/10",
+              ].join(" ")}
+            >
+              Level2
+            </button>
+          </div>
+        </div>
+
+        <div className="md:ml-auto text-sm opacity-80">
           進捗{" "}
           <strong>
             {score.correct}/{score.total}
@@ -91,7 +140,7 @@ export default function WordQuiz() {
         </div>
       </div>
 
-      <div className="mb-4 text-4xl tracking-wide">{q.prompt}</div>
+      <div className="mb-4 text-5xl tracking-wide">{q.prompt}</div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {q.options.map((opt) => {
