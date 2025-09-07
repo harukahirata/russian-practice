@@ -2,8 +2,9 @@ import "./globals.css";
 import TabBar from "@/components/TabBar";
 
 export const metadata = {
-  title: "ロシア語アルファベットクイズ",
-  description: "Cyrillic × 読み4択",
+  title: "ロシア語クイズ",
+  description: "Alphabet / Words Quiz",
+  themeColor: "#000000",
 };
 export default function RootLayout({
   children,

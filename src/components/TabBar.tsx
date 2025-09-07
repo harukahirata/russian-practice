@@ -11,7 +11,7 @@ const tabs = [
 export default function TabBar() {
   const pathname = usePathname();
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-white/10 bg-slate-900/85 backdrop-blur">
+    <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-white/10 backdrop-blur">
       <ul className="mx-auto flex max-x-[960px] items-stretch justify-around">
         {tabs.map((t) => {
           const active = pathname === t.href;
@@ -21,7 +21,7 @@ export default function TabBar() {
                 href={t.href}
                 className={[
                   "flex flex-col items-center justify-center gap-0.5 py-2.5 text-sm",
-                  active ? "text-white" : "text-white/70 hover:text-white",
+                  active ? "text-white" : "text-white/40 hover:text-white",
                 ].join(" ")}
               >
                 <span aria-hidden className="text-base">
