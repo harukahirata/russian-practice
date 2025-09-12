@@ -17,7 +17,7 @@ export default function RootLayout({
         <div className="mx-auto max-w-[960px] px-4 pb-20 p-6">
           <header className="mb-6 flex items-center justify-between">
             <h1 className="m-0 text-xl">ロシア語アルファベットクイズ</h1>
-            <nav className="opacity-80">v0.1</nav>
+            <nav className="opacity-80">v1.0</nav>
           </header>
           {children}
           <footer className="mt-10 text-sm opacity-70">

@@ -2,6 +2,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { CYRILLIC, CHOICES_READING, CyrillicLetter } from "@/lib/cyrillic";
 
+type Mode = "reading" | "ipa";
+
 const EMPTY_Q = { correct: "", options: [] as string[] };
 
 function pickRandom<T>(arr: T[], n: number): T[] {
@@ -13,14 +15,26 @@ function pickRandom<T>(arr: T[], n: number): T[] {
   return copy.slice(0, n);
 }
 
-function buildQuestion(letter: CyrillicLetter) {
-  const correct = letter.readingJa;
-  const others = pickRandom(
-    CHOICES_READING.filter((c) => c !== correct),
-    3
-  );
-  const options = pickRandom([correct, ...others], 4);
-  return { correct, options } as const;
+function buildQuestion(letter: CyrillicLetter, mode: Mode) {
+  if (mode === "reading") {
+    const correct = letter.readingJa;
+    const others = pickRandom(
+      CHOICES_READING.filter((c) => c !== correct),
+      3
+    );
+    const options = pickRandom([correct, ...others], 4);
+    return { correct, options } as const;
+  } else {
+    const correct = letter.ipa ?? "-";
+
+    const allIpa = CYRILLIC.map((l) => l.ipa).filter(Boolean) as string[];
+    const others = pickRandom(
+      allIpa.filter((ipa) => ipa !== correct),
+      3
+    );
+    const options = pickRandom([correct, ...others], 4);
+    return { correct, options } as const;
+  }
 }
 
 export default function AlphaQuiz() {
@@ -28,7 +42,7 @@ export default function AlphaQuiz() {
   const [selected, setSelected] = useState<string | null>(null);
   const [score, setScore] = useState({ correct: 0, total: 0 });
 
-  const [showKind, setShowKind] = useState(false);
+  const [mode, setMode] = useState<Mode>("reading");
 
   useEffect(() => {
     setIndex(Math.floor(Math.random() * CYRILLIC.length));
@@ -40,8 +54,8 @@ export default function AlphaQuiz() {
 
   const q = useMemo(() => {
     if (index === null) return EMPTY_Q;
-    return buildQuestion(letter);
-  }, [index, letter]);
+    return buildQuestion(letter, mode);
+  }, [index, letter, mode]);
 
   const answered = selected !== null;
 
@@ -63,17 +77,35 @@ export default function AlphaQuiz() {
 
   return (
     <section className="rounded-2xl border-white/10 bg-white/5 p-6">
-      <button
-        onClick={() => setShowKind((v) => !v)}
-        className="mb-4 rounded border border-white/20 px-3 py-1 text-sm hover:sm hover:bg-white/10"
-      >
-        {showKind ? "種別を隠す" : "種別を表示"}
-      </button>
       <div className="mb-3 flex items-center gap-3">
         <span className="opacity-80">進捗</span>
         <strong>
           {score.correct}/{score.total}
         </strong>
+      </div>
+      <div className="mb-4 flex gap-2">
+        <button
+          onClick={() => setMode("reading")}
+          className={[
+            "rounded px-3 py-1 text-sm border",
+            mode === "reading"
+              ? "bg-white text-slate-900 border-transparent"
+              : "border-white/20 hover:bg-white/10",
+          ].join(" ")}
+        >
+          読み
+        </button>
+        <button
+          onClick={() => setMode("ipa")}
+          className={[
+            "rounded px-3 py-1 text-sm border",
+            mode === "ipa"
+              ? "bg-white text-slate-900 border-transparent"
+              : "border-white/20 hover:bg-white/10",
+          ].join(" ")}
+        >
+          種別
+        </button>
       </div>
 
       <div className="grid grid-cols-[1fr_auto] items-start gap-4">
@@ -85,28 +117,21 @@ export default function AlphaQuiz() {
             {letter.upper}{" "}
             <span className="text-[48px] opacity-70">{letter.lower}</span>
           </div>
-          {showKind && (
-            <div className="mb-4 text-sm opacity-70">
-              種別：
+          {mode === "reading" ? (
+            <div className="mt-1 text-sm opacity-80">
+              読み：{letter.readingJa}
+            </div>
+          ) : (
+            <div className="mt-1 text-sm opacity-80">
+              種別：{" "}
               {letter.kind === "vowel"
                 ? "母音"
                 : letter.kind === "consonant"
                 ? "子音"
                 : "記号"}
-              {letter.ipa ? ` / IPA: ${letter.ipa}` : ""}
             </div>
           )}
         </div>
-
-        <button
-          onClick={() => {
-            setScore((s) => ({ ...s, total: s.total + 1 }));
-            next();
-          }}
-          className="rounded-full border border-white/20 px-3 py-2 opacity-90 hover:opacity-100"
-        >
-          スキップ
-        </button>
       </div>
 
       <div className="mt-2 grid grid-cols-2 gap-3">
