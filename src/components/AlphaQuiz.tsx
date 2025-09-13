@@ -117,20 +117,6 @@ export default function AlphaQuiz() {
             {letter.upper}{" "}
             <span className="text-[48px] opacity-70">{letter.lower}</span>
           </div>
-          {mode === "reading" ? (
-            <div className="mt-1 text-sm opacity-80">
-              読み：{letter.readingJa}
-            </div>
-          ) : (
-            <div className="mt-1 text-sm opacity-80">
-              種別：{" "}
-              {letter.kind === "vowel"
-                ? "母音"
-                : letter.kind === "consonant"
-                ? "子音"
-                : "記号"}
-            </div>
-          )}
         </div>
       </div>
 
